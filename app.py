@@ -4,13 +4,13 @@ from flask import Flask, render_template, request, jsonify
 app = Flask(__name__)
 
 # CSV 파일을 읽어서 데이터프레임으로 저장
-# 한글 인코딩 문제 방지를 위해 encoding='cp949' 사용
+# 서버 환경 호환성을 위해 파일 이름을 영어로 바꾸고, 인코딩을 utf-8로 변경
 try:
-    df = pd.read_csv('미수내역.csv', encoding='cp949')
+    df = pd.read_csv('data.csv', encoding='utf-8')
     # 숫자처럼 보이는 POS코드를 문자로 취급하여 오류 방지
     df['코드'] = df['코드'].astype(str)
 except FileNotFoundError:
-    print("'미수내역.csv' 파일을 찾을 수 없습니다. 같은 폴더에 파일이 있는지 확인하세요.")
+    print("'data.csv' 파일을 찾을 수 없습니다. 같은 폴더에 파일이 있는지 확인하세요.")
     df = None
 except Exception as e:
     print(f"파일을 읽는 중 오류 발생: {e}")
