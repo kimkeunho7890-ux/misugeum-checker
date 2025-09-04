@@ -21,7 +21,6 @@
         th { background-color: #f2f2f2; text-align: center; }
         .total-amount-display { font-weight: bold; font-size: 1.2em; color: #d93025; text-align: right; margin-top: 1em; margin-bottom: 1em; }
         
-        /* 청구서 및 안내문 스타일 */
         #invoice-title { text-align: center; font-size: 1.8em; font-weight: bold; color: #2c3e50; margin-top: 1.5em; margin-bottom: 0.2em; }
         #seller-name { text-align: center; font-size: 1.2em; color: #333; margin-top: 0; }
         .notice-box { background-color: #f3f8ff; border: 1px solid #b8d6ff; padding: 15px; margin-top: 1.5em; border-radius: 5px; font-size: 14px; line-height: 1.6; }
@@ -30,10 +29,11 @@
         .table-wrapper { overflow-x: auto; margin-top: 1em; }
         #manager-results-container, #pos-results-container { display: none; }
 
-        /* ============== 내비게이션 버튼 스타일 추가 ================= */
         .navigation-controls {
             display: flex;
-            justify-content: space-between;
+            /* ============== justify-content 속성 변경 및 gap 추가 ================= */
+            justify-content: flex-start; /* 왼쪽 정렬 */
+            gap: 10px; /* 버튼 사이 간격 */
             margin-top: 1.5em;
         }
 
@@ -123,18 +123,15 @@
 
     <script>
         let csvData;
-        // ============== 내비게이션 상태 관리 변수 추가 =================
         let currentManagerSellerList = [];
         let currentSellerIndex = -1;
 
-        // CSV 데이터 로드 및 파싱 (제공해주신 코드와 동일)
         async function loadCSV() {
             if (csvData) return csvData;
             try {
                 const response = await fetch('data.csv');
                 if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const text = await response.text();
-                // 첫 줄(헤더)을 제외하고 파싱하기 위해 slice(1)을 사용합니다.
                 const rows = text.trim().split('\n').slice(1);
                 csvData = rows.map(row => {
                     const columns = row.split(',');
@@ -147,7 +144,7 @@
                         details: columns.slice(5, -1).join(',') || columns[5]?.trim(),
                         amount: parseInt(columns[columns.length - 1], 10) || 0
                     };
-                }).filter(row => row.manager && row.posCode); // manager와 posCode가 있는 데이터만 필터링
+                }).filter(row => row.manager && row.posCode);
                 return csvData;
             } catch (error) {
                 alert(`파일을 불러올 수 없습니다: ${error.message}`);
@@ -158,7 +155,6 @@
         document.getElementById('manager-name-input').addEventListener('keyup', (e) => e.key === 'Enter' && searchByManager());
         document.getElementById('pos-code-input').addEventListener('keyup', (e) => e.key === 'Enter' && searchByPosCode());
 
-        // 담당별 조회 기능
         async function searchByManager() {
             const managerName = document.getElementById('manager-name-input').value.trim();
             if (!managerName) {
@@ -179,7 +175,6 @@
                 return acc;
             }, {});
 
-            // ============== 현재 담당자의 판매점 목록 저장 =================
             currentManagerSellerList = Object.keys(aggregatedData).map(seller => ({
                 seller: seller,
                 posCode: aggregatedData[seller].posCode
@@ -209,7 +204,7 @@
                 detailButton.innerText = '상세보기';
                 detailButton.onclick = () => {
                     document.getElementById('pos-code-input').value = data.posCode;
-                    searchByPosCode(true); // '목록으로' 버튼 활성화를 위해 플래그 전달
+                    searchByPosCode(true);
                 };
                 detailCell.appendChild(detailButton);
             }
@@ -219,7 +214,6 @@
             posContainer.style.display = 'none';
         }
 
-        // POS코드별 조회 기능
         async function searchByPosCode(fromManagerList = false) {
             const posCode = document.getElementById('pos-code-input').value.trim();
             if (!posCode) {
@@ -229,11 +223,9 @@
             const data = await loadCSV();
             const filteredData = data.filter(row => row.posCode === posCode);
             
-            // ============== 현재 판매점의 인덱스 업데이트 =================
             if (fromManagerList) {
                 currentSellerIndex = currentManagerSellerList.findIndex(item => item.posCode === posCode);
             } else {
-                // 직접 검색 시, 내비게이션 비활성화를 위해 목록 초기화
                 currentManagerSellerList = [];
                 currentSellerIndex = -1;
             }
@@ -253,7 +245,6 @@
             const noticeSellerName = document.getElementById('notice-seller-name');
             const captureBtn = document.getElementById('capture-btn');
 
-            // 초기화
             tableBody.innerHTML = "";
             resultMessage.innerText = "";
             totalAmountDiv.innerText = "";
@@ -298,7 +289,6 @@
             updateNavigationButtons();
         }
 
-        // ============== 내비게이션 관련 함수들 추가 =================
         function updateNavigationButtons() {
             const navControls = document.getElementById('navigation-controls');
             if (currentManagerSellerList.length > 0) {
@@ -333,7 +323,6 @@
             document.getElementById('pos-results-container').style.display = 'none';
         }
 
-        // 캡쳐 기능
         function captureResults() {
             const captureArea = document.getElementById('capture-area');
             const sellerName = document.getElementById('seller-name').innerText;
